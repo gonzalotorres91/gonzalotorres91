@@ -1,5 +1,5 @@
-![header](https://capsule-render.vercel.app/api?type=waving&color=gradient&text=Hello%20World!&height=100&section=header&fontColor=d6ace6)
-### Let's connect and have a chat! 🌟
+![header](https://capsule-render.vercel.app/api?type=waving&color=gradient&text=Hola%20mundo!&height=100&section=header&fontColor=d6ace6)
+👋 Hi, I’m @gonzalotorres91
 - 📫 How to reach me:
 ### A litle bit about me:
 - 🌱 I’m currently learning about phyton and devops.
@@ -9,7 +9,7 @@
 
 ![Python](https://img.shields.io/badge/-Python-3776AB?style=flat-square&logo=python&logoColor=white)
 
-![header](https://capsule-render.vercel.app/api?type=waving&color=gradient&height=100&section=footer)- 👋 Hi, I’m @gonzalotorres91
+![header](https://capsule-render.vercel.app/api?type=waving&color=gradient&height=100&section=footer)- 
 
 
 <!---
