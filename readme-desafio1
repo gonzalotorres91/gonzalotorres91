@@ -1,0 +1,97 @@
+Desafio Numero 1
+Alumno: Gonzalo Torres
+
+Descripción detallada del Jenkinsfile para la creación de usuarios con contraseñas temporales
+
+Introducción
+Este documento detalla la implementación de un Jenkinsfile que automatiza la creación de usuarios en un sistema Linux, asignándoles contraseñas temporales y gestionando sus pertenencias a grupos específicos. Este pipeline contiene varias etapas que se ejecutan de forma secuencial en Jenkins, cada una realizando una función específica en el proceso de provisión de usuario.
+Estructura del Jenkinsfile
+El Jenkinsfile tiene la siguiente estructura general:
+Definición de parámetros
+Generación de la contraseña temporal
+Creación de usuario y asignación de grupo
+Asignación de la contraseña temporal
+Expiración de la contraseña temporal
+Manejo de resultados: éxito, abortado, y fallo
+Detalles del código
+
+1. Definición de parámetros:
+En esta sección se definen los parámetros que el pipeline recibirá cuando se ejecute. Estos parámetros permiten al usuario ingresar datos como el login, nombre, apellido, y departamento al que el usuario pertenece. Los parámetros son los siguientes:
+
+login: El nombre de usuario que se desea crear.
+name: El primer nombre del usuario.
+lastname: El apellido del usuario.
+department: El departamento al que el usuario será asignado. Se puede seleccionar entre las opciones: contabilidad, finanzas, tecnologia.
+Codigo groovy:
+parameters {
+    string (name: 'login', defaultValue: '', description: 'Ingresa el login')
+    string (name: 'name', defaultValue: '', description: 'Ingresa el nombre')
+    string (name: 'lastname', defaultValue: '', description: 'Ingresa el apellido')
+    choice (name: 'department', choices: ['contabilidad', 'finanzas', 'tecnologia'], description: 'Selecciona el departamento')
+}
+2. Generación de la contraseña temporal:
+En esta etapa se genera una contraseña aleatoria de 8 caracteres utilizando una combinación de letras (mayúsculas y minúsculas) y números. Esto se hace mediante un pequeño script Groovy que genera un número aleatorio dentro de un rango de caracteres definidos. La contraseña generada es luego almacenada en una variable de entorno env.PASSWORD para su uso posterior.
+
+Código de la función generatePassword:
+def generatePassword() {
+    def chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    def password = (1..8).collect { chars[(Math.random() * chars.length()).toInteger()] }.join('')
+    return password
+}
+Esta función toma un rango de números de 1 a 8 (para generar una contraseña de 8 caracteres) y selecciona caracteres aleatorios de la cadena chars.
+
+Etapa en el pipeline:
+stage ('Generar contraseña temporal') {
+    steps {
+        script {
+            def password = generatePassword()
+            echo "Password temporal generada: ${password}"
+            env.PASSWORD = password
+        }
+    }
+}
+
+3. Creación de usuario y asignación de grupo:
+En esta etapa, se crea un nuevo usuario en el sistema utilizando el comando useradd. Además, el nuevo usuario se asigna al grupo correspondiente según el parámetro department (como contabilidad, finanzas, o tecnologia --- Dichos grupos de usuarios fueron creados manualmente en el linux donde corre el Jenkins). La creación del usuario y su asignación al grupo se realiza con los siguientes comandos:
+
+sh "sudo useradd -m -s /bin/bash ${login}"
+sh "sudo usermod -aG ${params.department} ${login}"
+El login se genera utilizando el formato: ${params.name.toLowerCase()}${params.lastname.toLowerCase()} si no se ha proporcionado un login manualmente.
+
+4. Asignación de la contraseña temporal:
+Una vez creado el usuario, en esta etapa se asigna la contraseña temporal generada previamente. Se utiliza el comando chpasswd para asignar la contraseña al usuario recién creado. El comando se ejecuta de la siguiente forma:
+
+sh "echo ${params.login}:${env.PASSWORD} | sudo chpasswd"
+
+5. Expiración de la contraseña temporal:
+Para garantizar que la contraseña asignada sea temporal, se expira la contraseña inmediatamente después de asignarla. Esto se hace con el siguiente comando:
+
+sh "sudo passwd -e ${params.login}"
+
+Este comando obliga al usuario a cambiar su contraseña la próxima vez que inicie sesión.
+
+6. Manejo de resultados: éxito, abortado y fallo:
+Finalmente, el bloque post maneja los resultados del pipeline. Dependiendo de si el proceso se completó correctamente, se eliminará al usuario si el pipeline es abortado o falla.
+
+En caso de éxito: Se muestran los detalles del usuario creado.
+En caso de fallo o abortado: Se elimina al usuario creado.
+Código en el bloque post:
+post {
+    success {
+        echo "Usuario creado exitosamente"
+        echo "Usuario: ${params.login}"
+        echo "Password: ${env.PASSWORD}"
+        echo "Departamento: ${params.department}"
+    }
+    aborted {
+        echo "El usuario no fue creado"
+        sh "sudo userdel -r ${params.login}"
+    }
+    failure {
+        echo "Hubo un error en el proceso, el usuario fue eliminado"
+        sh "sudo userdel -r ${params.login}"
+    }
+}
+
+Conclusión
+Este Jenkinsfile automatiza la creación de un usuario en un sistema Linux, asignándole una contraseña temporal y un grupo. Asegura que la contraseña sea cambiada inmediatamente después de ser asignada, incrementando la seguridad. Además, maneja los posibles escenarios de éxito, fallo o aborto, asegurando que los usuarios no queden huérfanos si el proceso no se completa correctamente.
