@@ -1,38 +1,57 @@
-// return a temporal password
+// Generar una contraseña temporal utilizando una combinación de caracteres al azar
 def generatePassword() {
-    def password = UUID.randomUUID().toString().replaceAll('-', '').take(8)
+    def chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    def password = (1..8).collect { chars[(Math.random() * chars.length()).toInteger()] }.join('')
     return password
 }
+
 pipeline {
     agent any
     parameters {
         string (name: 'login', defaultValue: '', description: 'Ingresa el login')
         string (name: 'name', defaultValue: '', description: 'Ingresa el nombre')
         string (name: 'lastname', defaultValue: '', description: 'Ingresa el apellido')
-        choice (name: 'department', choices: ['contabilidad','finanzas','tecnologia'], description: 'Selecciona el departamento')
+        choice (name: 'department', choices: ['contabilidad', 'finanzas', 'tecnologia'], description: 'Selecciona el departamento')
     }
     stages {
-        stage ('Crea una password temporal'){
-            steps{
-                script{
-                    def password = generatePassword().toString()
-                    echo "Password temporal: ${password}"
+        stage ('Validar parámetros') {
+            steps {
+                script {
+                    if (params.login == '') {
+                        error "El login no puede estar vacío"
+                    }
+                    echo "Login recibido: ${params.login}"
                 }
             }
         }
-        stage ('Crea el usuario y asigna el grupo') {
+        stage ('Generar contraseña temporal') {
             steps {
-                sh "sudo useradd -m -s /bin/bash ${params.login}"
-                sh "sudo usermod -aG ${params.department} ${params.login}"
+                script {
+                    def password = generatePassword()
+                    echo "Password temporal generada: ${password}"
+                    // Guardar la contraseña como variable de entorno para su uso posterior
+                    env.PASSWORD = password
+                }
             }
         }
-        stage ('Asigna la password temporal') {
+        stage ('Crear usuario y asignar grupo') {
             steps {
-                echo "${params.login}:${password}"
-                sh "echo ${params.login}:${password} | sudo chpasswd"
+                script {
+                    def login = params.login ?: "${params.name.toLowerCase()}${params.lastname.toLowerCase()}"
+                    sh "sudo useradd -m -s /bin/bash ${login}"
+                    sh "sudo usermod -aG ${params.department} ${login}"
+                }
             }
         }
-        stage ('Expirar la password temporal') {
+        stage ('Asignar contraseña temporal') {
+            steps {
+                script {
+                    echo "Asignando la contraseña temporal para ${params.login}"
+                    sh "echo ${params.login}:${env.PASSWORD} | sudo chpasswd"
+                }
+            }
+        }
+        stage ('Expirar contraseña temporal') {
             steps {
                 sh "sudo passwd -e ${params.login}"
             }
@@ -40,18 +59,18 @@ pipeline {
     }
     post {
         success {
-                echo "Usuario: ${params.login}"
-                echo "Password: ${password}"
-                echo "Departamento: ${params.department}"
+            echo "Usuario creado exitosamente"
+            echo "Usuario: ${params.login}"
+            echo "Password: ${env.PASSWORD}"
+            echo "Departamento: ${params.department}"
         }
         aborted {
             echo "El usuario no fue creado"
             sh "sudo userdel -r ${params.login}"
         }
         failure {
-            echo "No se pudo crear el provisionamiento y el usuario fue eliminado"
+            echo "Hubo un error en el proceso, el usuario fue eliminado"
             sh "sudo userdel -r ${params.login}"
         }
     }
-
 }
