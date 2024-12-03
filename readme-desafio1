@@ -93,5 +93,25 @@ post {
     }
 }
 
+// se añadio: string (name: 'deleteUserLogin', defaultValue: '', description: 'Ingresa el login del usuario a eliminar') // Nuevo parámetro para eliminar usuario
+y el stage eliminarusuario:
+ 
+stage ('Eliminar usuario') {
+    when {
+        expression { return params.deleteUserLogin != '' }
+    }
+    steps {
+        script {
+            echo "Eliminando usuario: ${params.deleteUserLogin}"
+            // Eliminar el usuario, su grupo y su directorio home
+            sh """
+                sudo userdel -r ${params.deleteUserLogin} || true
+                sudo groupdel ${params.deleteUserLogin} || true
+            """
+        }
+    }
+}
+
+
 Conclusión
 Este Jenkinsfile automatiza la creación de un usuario en un sistema Linux, asignándole una contraseña temporal y un grupo. Asegura que la contraseña sea cambiada inmediatamente después de ser asignada, incrementando la seguridad. Además, maneja los posibles escenarios de éxito, fallo o aborto, asegurando que los usuarios no queden huérfanos si el proceso no se completa correctamente.
