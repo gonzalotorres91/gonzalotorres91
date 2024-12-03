@@ -12,15 +12,17 @@ pipeline {
         string (name: 'name', defaultValue: '', description: 'Ingresa el nombre')
         string (name: 'lastname', defaultValue: '', description: 'Ingresa el apellido')
         choice (name: 'department', choices: ['contabilidad', 'finanzas', 'tecnologia'], description: 'Selecciona el departamento')
+        **string (name: 'deleteUserLogin', defaultValue: '', description: 'Ingresa el login del usuario a eliminar') // Nuevo parámetro para eliminar usuario**
     }
     stages {
         stage ('Validar parámetros') {
             steps {
                 script {
-                    if (params.login == '') {
-                        error "El login no puede estar vacío"
+                    if (params.login == '' && params.deleteUserLogin == '') {
+                        error "El login para crear o eliminar usuario no puede estar vacío"
                     }
-                    echo "Login recibido: ${params.login}"
+                    echo "Login recibido para creación: ${params.login}"
+                    echo "Login recibido para eliminación: ${params.deleteUserLogin}"
                 }
             }
         }
@@ -35,6 +37,9 @@ pipeline {
             }
         }
         stage ('Crear usuario y asignar grupo') {
+            when {
+                expression { return params.login != '' }
+            }
             steps {
                 script {
                     def login = params.login ?: "${params.name.toLowerCase()}${params.lastname.toLowerCase()}"
@@ -44,6 +49,9 @@ pipeline {
             }
         }
         stage ('Asignar contraseña temporal') {
+            when {
+                expression { return params.login != '' }
+            }
             steps {
                 script {
                     echo "Asignando la contraseña temporal para ${params.login}"
@@ -52,10 +60,28 @@ pipeline {
             }
         }
         stage ('Expirar contraseña temporal') {
+            when {
+                expression { return params.login != '' }
+            }
             steps {
                 sh "sudo passwd -e ${params.login}"
             }
         }
+        **stage ('Eliminar usuario') {
+            when {
+                expression { return params.deleteUserLogin != '' }
+            }
+            steps {
+                script {
+                    echo "Eliminando usuario: ${params.deleteUserLogin}"
+                    // Eliminar el usuario, su grupo y su directorio home
+                    sh """
+                        sudo userdel -r ${params.deleteUserLogin} || true
+                        sudo groupdel ${params.deleteUserLogin} || true
+                    """
+                }
+            }
+        }**
     }
     post {
         success {
