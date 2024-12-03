@@ -67,7 +67,7 @@ pipeline {
                 sh "sudo passwd -e ${params.login}"
             }
         }
-        **stage ('Eliminar usuario') {
+        stage ('Eliminar usuario') {
             when {
                 expression { return params.deleteUserLogin != '' }
             }
