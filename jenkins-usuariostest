@@ -12,7 +12,7 @@ pipeline {
         string (name: 'name', defaultValue: '', description: 'Ingresa el nombre')
         string (name: 'lastname', defaultValue: '', description: 'Ingresa el apellido')
         choice (name: 'department', choices: ['contabilidad', 'finanzas', 'tecnologia'], description: 'Selecciona el departamento')
-        string (name: 'deleteUserLogin', defaultValue: '', description: 'Ingresa el login del usuario a eliminar') // Nuevo parámetro para eliminar usuario**
+        string (name: 'deleteUserLogin', defaultValue: '', description: 'Ingresa el login del usuario a eliminar') 
     }
     stages {
         stage ('Validar parámetros') {
