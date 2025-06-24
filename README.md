@@ -20,15 +20,6 @@ Durante el bootcamp y proyectos personales, trabajé con:
 
 ## 📌 Proyectos Destacados
 
-| Proyecto | Tecnologías | Descripción |
-|---------|-------------|-------------|
-| [devops-tareas-app](https://github.com/gonzalotorres91/devops-tareas-app) | React, Node.js, MongoDB, Docker, CI/CD | App fullstack con Docker Compose y pipeline en GitHub Actions |
-| [terraform-cloud-demo](https://github.com/gonzalotorres91/terraform-cloud-demo) | Terraform, AWS, GitHub Actions | Infraestructura como código en AWS aprovisionada automáticamente |
-| [ansible-roles](https://github.com/gonzalotorres91/ansible-roles) | Ansible | Automatización modularizada con roles reutilizables |
-| [k8s-educacionit-app](https://github.com/gonzalotorres91/k8s-educacionit-app) | Kubernetes, Helm | Despliegue de aplicación con Helm charts personalizados |
-| [jenkins-ci-pipeline](https://github.com/gonzalotorres91/jenkins-ci-pipeline) | Jenkins, Node.js | Pipeline de CI/CD con testing automatizado y webhooks de GitHub |
-
----
 
 ## 🛠 Tecnologías
 
