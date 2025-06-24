@@ -44,8 +44,8 @@ Durante el bootcamp y proyectos personales, trabajé con:
 
 ## 📫 Contacto
 
-- 💼 [LinkedIn](https://www.linkedin.com/in/tu_usuario_linkedin) *(reemplazar)*
-- 📧 gonzalo.devops@gmail.com *(reemplazar si es necesario)*
+- 💼 [LinkedIn]
+- 📧 gonzalotorres.devops@gmail.com 
 
 ---
 
